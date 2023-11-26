@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+  <title>Pharmacy POS System</title>
+</head>
+<body>
+  <div class="main-container">
+    <div class="pos-container">
+      <div class="top-row">
+        <a href="products.html" class="folder-link">
+          <button class="folder-button" data-folder-id="folder1">
+            <h2 class="folder-title">PHARMACY POS SYSTEM</h2>
+          </button>
+        </a>
+      </div>
+  
+      <div class="cart-and-button-container">
+        <div class="cart">
+          <div id="cart-table-container">
+            <table id="cart-table">
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th>Description</th>
+                  <th>Price</th>
+                  <th>Quantity</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="cart-list"></tbody>
+            </table>
+          </div>
+        </div>
+  
+        <div class="button-container">
+          <button id="checkout-btn">Checkout</button>
+          <label for="amount-given"></label>
+          <input type="number" id="amount-given">
+          <button id="reset-btn">Reset</button>
+          <button id="print-receipt-btn">Print Receipt</button>
+          <div id="cart-total">Total:</div>
+          <label id="change">Change:</label>
+        </div>
+      </div>
+
+    <div class="products-container">
+      <div class="product-folder" data-folder-id="folder1">
+        <a href="index.html" class="folder-product">PRODUCTS</a>
+        <input type="text" id="searchInput" placeholder="Search products">
+        <ul class="product-list">
+            <li class="product-item" data-product-id="1" data-product-name="ACETYLCYSTEINE" data-product-des="FLUIMUCIL-100MG SACHET" data-product-price="12.50">
+                ACETYLCYSTEINE FLUIMUCIL-100MG SACHET 12.50
+                <button class="add-to-cart-btn" data-product-name="ACETYLCYSTEINE" data-product-des="FLUIMUCIL-100MG SACHET" data-product-price="12.50">ADD</button>
+            </li>
+            <li class="product-item" data-product-id="2" data-product-name="ACETYLCYSTEINE" data-product-des="FLUIMUCIL-200MG SACHET" data-product-price="14.00">
+                ACETYLCYSTEINE FLUIMUCIL-200MG SACHET 14.00
+                <button class="add-to-cart-btn" data-product-name="ACETYLCYSTEINE" data-product-des="ACETIMAX-600MG SACHET" data-product-price="25.00">ADD</button>
+            </li>
+            <li class="product-item" data-product-id="3" data-product-name="ACETYLCYSTEINE" data-product-des="ACETIMAX-600MG SACHET" data-product-price="25.00">
+                ACETYLCYSTEINE FLUIMUCIL-600MG SACHET 25.00
+                <button class="add-to-cart-btn" data-product-name="ACICLOVIR" data-product-des="ZEALOR 400MG TABLET" data-product-price="15.25">ADD</button>
+            </li>
+            <li class="product-item" data-product-id="4" data-product-name="ACICLOVIR" data-product-des="ZEALOR 400MG TABLET" data-product-price="15.25">
+                ACICLOVIR ZEALOR 400MG TABLET 15.25
+                <button class="add-to-cart-btn" data-product-name="ACICLOVIR" data-product-des="ZEALOR 400MG TABLET" data-product-price="15.25">ADD</button>
+            </li>
+        </ul>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const searchInput = document.getElementById('searchInput');
+            const productItems = document.querySelectorAll('.product-item');
+
+            searchInput.addEventListener('input', function () {
+                const searchTerm = searchInput.value.toLowerCase();
+
+                productItems.forEach(item => {
+                    const productName = item.getAttribute('data-product-name').toLowerCase();
+                    const productDescription = item.getAttribute('data-product-des').toLowerCase();
+                    const itemVisible = productName.includes(searchTerm) || productDescription.includes(searchTerm);
+
+                    if (itemVisible) {
+                        item.style.display = 'block';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            });
+        });
+    </script>
+    </div>
+
+    <div class="receipt-container">
+          <table id="receipt-table">
+            <h2>POS pharmacy system</h2>
+    <p>BSU Alangilan Campus</p>
+    <hr>
+    <table id="receipt-content">
+      <tr>
+        <th>Product</th>
+        <th>Quantity</th>
+        <th>Price</th>
+      </tr>
+    </table>
+    <hr>
+    <div class="total-section">
+      <p>Total Quantity: <span id="total-quantity">0</span></p>
+      <p>Total Amount: <span id="total-amount">$0.00</span></p>
+    </div>
+    <hr>
+    <div class="payment-section">
+      <p>Amount given: <span id="amount-given">$0.00</span></p>
+      <p>Change: <span id="change">$0.00</span></p>
+    </div>
+    <hr>
+    <p>Thank You! Come Again!</p>
+  </div>
+</div>
+
+<script>
+  function updateReceiptContent(change) {
+    const receiptContent = document.getElementById('receipt-content');
+    receiptContent.innerHTML = '<tr><th>Product</th><th>Quantity</th><th>Price</th></tr>';
+
+    cartData.forEach(product => {
+        const receiptRow = document.createElement('tr');
+        receiptRow.innerHTML = `
+            <td>${product.name}</td>
+            <td>${product.quantity}</td>
+            <td>$${(product.price * product.quantity).toFixed(2)}</td>
+        `;
+        receiptContent.appendChild(receiptRow);
+    });
+
+    const totalQuantity = cartData.reduce((total, product) => total + product.quantity, 0);
+    const totalAmount = cartData.reduce((total, product) => total + (product.price * product.quantity), 0);
+
+    document.getElementById('total-quantity').innerText = totalQuantity;
+    document.getElementById('total-amount').innerText = `$${totalAmount.toFixed(2)}`;
+
+    if (change !== undefined) {
+        document.getElementById('change').innerText = `$${change.toFixed(2)}`;
+    }
+}
+
+document.getElementById('checkout-btn').addEventListener('click', function () {
+    const amountGiven = parseFloat(document.getElementById('amount-given').value) || 0;
+    const totalAmount = cartData.reduce((total, product) => total + (product.price * product.quantity), 0);
+    const change = (amountGiven - totalAmount).toFixed(2);
+
+    updateReceiptContent(parseFloat(change)); 
+    cartData = [];
+    localStorage.setItem('cart', JSON.stringify(cartData));
+    updateCart();
+});
+
+</script>
+
+<script src="script.js"></script>
+</body>
+</html>
