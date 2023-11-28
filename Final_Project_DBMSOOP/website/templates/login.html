@@ -1,0 +1,48 @@
+{% extends "base.html" %} {% block title %}Login{% endblock%}
+
+{%block content%}
+<form method="POST" id="loginForm" action="main.html"></form>
+    <h3 align="center" >Login</h3> 
+    <h3><a href="sign_up.html" align="left" >Sign Up</a></h3>
+    <div class="form-group">
+        <label for="email">Email Address</label>
+    <input
+      type="email"
+      class="form-control"
+      id="email"
+      name="email"
+      placeholder="Enter email"
+    />
+  </div>
+  <div class="form-group">
+    <label for="password1">Password</label>
+    <input
+      type="password"
+      class="form-control"
+      id="password"
+      name="password"
+      placeholder="Enter password"
+    />
+  </div>
+  <br />
+  <button type="submit" class="btn btn-primary" onclick="validateAndSubmit()">Login</button>
+</form>
+{%endblock%}
+
+<script>
+function submitForm() {
+  document.getElementById('loginForm').submit(); 
+}
+
+function validateAndSubmit() {
+  const email = document.getElementById('email').value;
+  const password = document.getElementById('password').value;
+  
+  if (email.trim() === '' || password.trim() === '') {
+      alert('Please enter both email and password.');
+  } else {
+      document.getElementById('loginForm').submit();
+  }
+}
+
+</script>
