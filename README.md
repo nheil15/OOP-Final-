@@ -1,11 +1,11 @@
-Introduction
+#Introduction
 
 A digitalized POS system that runs through a website platform. 
 Apothecare is a pharmacy that has a solid database of medicines which involves a 
 point of sale system which ensures fast transactions of products. 
 This enables costumer to have a fast and safe transactions with the help of programs like this.
 
-Objectives
+#Objectives
 
 1. Inventory Management
  -maintain a comprehensive database of medicines, including stock levels,
