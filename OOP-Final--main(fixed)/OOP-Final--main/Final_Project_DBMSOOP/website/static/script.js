@@ -25,9 +25,6 @@ document.addEventListener('DOMContentLoaded', function () {
             const productNameCell = document.createElement('td');
             productNameCell.textContent = product.name;
    
-            const productDescriptionCell = document.createElement('td');
-            productDescriptionCell.textContent = product.description;
-   
             const productPriceCell = document.createElement('td');
             productPriceCell.textContent = `Php ${product.price.toFixed(2)}`;
    
@@ -64,7 +61,6 @@ document.addEventListener('DOMContentLoaded', function () {
             addButtonCell.appendChild(addButton);
    
             cartRow.appendChild(productNameCell);
-            cartRow.appendChild(productDescriptionCell);
             cartRow.appendChild(productPriceCell);
             cartRow.appendChild(productQuantityCell);
             cartRow.appendChild(removeButtonCell);
@@ -73,48 +69,51 @@ document.addEventListener('DOMContentLoaded', function () {
             cartList.appendChild(cartRow);
             total += product.price * product.quantity;
         });
-   
+
         cartTotal.textContent = `Total: Php ${total.toFixed(2)}`;
     }
-   
-    function updateReceipt(change) {
-        const receiptList = document.getElementById('receipt-list');
-        receiptList.innerHTML = '';
-   
-        cartData.forEach((product) => {
-            const receiptItem = document.createElement('tr');
-            receiptItem.innerHTML = `
+
+    function updateReceiptContent(change) {
+        const receiptContent = document.getElementById('receipt-content');
+        receiptContent.innerHTML = '<tr><th>Product</th><th>Quantity</th><th>Price</th></tr>';
+    
+        cartData.forEach(product => {
+            const receiptRow = document.createElement('tr');
+            receiptRow.innerHTML = `
                 <td>${product.name}</td>
-                <td>${product.description}</td>
-                <td>Php ${product.price.toFixed(2)}</td>
-                <td>${product.quantity}</td>
+                <td class="quantity">${product.quantity}</td>
+                <td>Php ${(product.price * product.quantity).toFixed(2)}</td>
             `;
-            receiptList.appendChild(receiptItem);
+            receiptContent.appendChild(receiptRow);
         });
-
-
-        const totalRow = document.createElement('tr');
-    totalRow.innerHTML = `
-        <td colspan="3" style="text-align: right;">Total:</td>
-        <td>Php ${total.toFixed(2)}</td>
-    `;
-    receiptList.appendChild(totalRow);
-
-
-    if (change !== undefined) {
-        const changeItem = document.createElement('li');
-        changeItem.innerHTML = `
-            <span>Change</span>
-            <span>Php ${change.toFixed(2)}</span>
-        `;
-        receiptList.appendChild(changeItem);
-        changeDisplay.textContent = `Change: Php ${change.toFixed(2)}`;
-    }
-
-
-    receiptTotal.textContent = `Total: Php ${total.toFixed(2)}`;
+    
+        const totalQuantity = cartData.reduce((total, product) => total + product.quantity, 0);
+        const totalAmount = cartData.reduce((total, product) => total + (product.price * product.quantity), 0);
+    
+        document.getElementById('total-quantity').innerText = totalQuantity;
+        document.getElementById('total-amount').innerText = `Php ${totalAmount.toFixed(2)}`;
+    
+        const amountGivenInput = document.getElementById('amount-given');
+        const amountGiven = parseFloat(amountGivenInput.value) || 0;
+        
+        document.getElementById('amount-receipt').innerText = `Php ${amountGiven.toFixed(2)}`;
+        document.getElementById('change-receipt').innerText = `Php ${change.toFixed(2)}`;
 }
 
+    function printReceipt() {
+        const receiptContainer = document.querySelector('.receipt-container').cloneNode(true);
+    
+        const printContent = document.createElement('div');
+        printContent.appendChild(receiptContainer);
+    
+        const printWindow = window.open('', '_blank');
+        printWindow.document.body.appendChild(printContent);
+    
+        printWindow.print();
+    }
+    
+    document.getElementById('print-receipt-btn').addEventListener('click', printReceipt);
+    
 
 productListItems.forEach((product) => {
         product.addEventListener('click', () => {
@@ -163,21 +162,30 @@ productListItems.forEach((product) => {
         });
     });
 
-    checkoutBtn.addEventListener('click', () => {
-        const amountGiven = parseFloat(document.getElementById('amount-given').value) || 0;
-        const totalAmount = cartData.reduce((total, product) => total + (product.price * product.quantity), 0);
-        const change = (amountGiven - totalAmount).toFixed(2);
-    
-        if (change >= 0) {
-            updateReceipt(parseFloat(change));
-            cartData = [];
-            localStorage.setItem('cart', JSON.stringify(cartData));
-            updateCart();
-        } else {
-            alert('Insufficient amount given. Please provide enough to cover the total.');
-        }
-    });
-    
+    // ...
+
+checkoutBtn.addEventListener('click', () => {
+    const amountGiven = parseFloat(amountGivenInput.value) || 0;
+    const totalAmount = cartData.reduce((total, product) => total + (product.price * product.quantity), 0);
+    const change = (amountGiven - totalAmount).toFixed(2);
+
+    if (change >= 0) {
+      updateReceiptContent(parseFloat(change));
+
+      document.getElementById('amount-given').innerText = `Php ${amountGiven.toFixed(2)}`;
+      document.getElementById('change').innerText = `Php ${change}`;
+  
+      const cartForReceipt = [...cartData];
+      cartData = [];
+      localStorage.setItem('cart', JSON.stringify(cartData));
+      updateCart();
+      
+      cartData = cartForReceipt;
+      updateReceiptContent(parseFloat(change));
+    } else {
+      alert('Insufficient amount given. Please provide enough to cover the total.');
+    }
+  });
 
     resetBtn.addEventListener('click', () => {
         cartData = []; 
@@ -186,11 +194,7 @@ productListItems.forEach((product) => {
         updateReceiptContent(0); 
     });
     
-       
-    
-    
         updateCart();
-    
     
     });
     
