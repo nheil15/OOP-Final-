@@ -1,3 +1,4 @@
+from flask import render_template
 from website import create_app
 
 app = create_app()
@@ -6,11 +7,11 @@ app = create_app()
 def login():
     return render_template('login.html')
 
-@app.route('/login, method=['GET', 'POST'])
+@app.route('/login', method=['GET', 'POST'])
 def signup():
     return render_template('sign_up.html')
 
-@app.route('/signup, method=['GET', 'POST'])
+@app.route('/signup', method=['GET', 'POST'])
 def index(): 
     return render_template('index.html')
 
