@@ -3,7 +3,6 @@
 {%block content%}
 <form method="POST" id="signupForm" action="main.html"></form>
     <h3 align="center" >Sign Up</h3>
-    <a href="login.html">LogIn</a>
     <div class="form-group">
         <label for="email">Email Address</label>
     <input
@@ -48,24 +47,3 @@
   <button type="submit" class="btn btn-primary" onclick="validateAndSubmit()">Submit</button>
 </form>
 {% endblock %}
-
-<script>
-  function submitForm() {
-    document.getElementById('loginForm').submit(); 
-  }
-  
-  function validateAndSubmit() {
-        const email = document.getElementById('email').value;
-        const firstName = document.getElementById('firstName').value;
-        const password1 = document.getElementById('password1').value;
-        const password2 = document.getElementById('password2').value;
-
-        if (email.trim() === '' || firstName.trim() === '' || password1.trim() === '' || password2.trim() === '') {
-            alert('Please enter email, first name, and password');
-        } else if (password1 !== password2) {
-            alert('Passwords do not match. Please re-enter.');
-        } else {
-            document.getElementById('signupForm').submit();
-        }
-    }
-  </script>
