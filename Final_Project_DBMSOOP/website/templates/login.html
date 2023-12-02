@@ -3,7 +3,6 @@
 {%block content%}
 <form method="POST" id="loginForm" action="main.html"></form>
     <h3 align="center" >Login</h3> 
-    <a href="sign_up.html">Sign Up</a>
     <div class="form-group">
         <label for="email">Email Address</label>
     <input
@@ -28,21 +27,3 @@
   <button type="submit" class="btn btn-primary" onclick="validateAndSubmit()">Login</button>
 </form>
 {%endblock%}
-
-<script>
-function submitForm() {
-  document.getElementById('loginForm').submit(); 
-}
-
-function validateAndSubmit() {
-  const email = document.getElementById('email').value;
-  const password = document.getElementById('password').value;
-  
-  if (email.trim() === '' || password.trim() === '') {
-      alert('Please enter both email and password.');
-  } else {
-      document.getElementById('loginForm').submit();
-  }
-}
-
-</script>
