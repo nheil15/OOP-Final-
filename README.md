@@ -1,4 +1,4 @@
-<h3><b>🗂 APOTHECARE</b></h3>
+<h1><b> APOTHECARE</b></h1>
 
 <h3><b>🗂 Table of Contents</b></h3>
 
