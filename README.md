@@ -1,3 +1,5 @@
+<h3><b>🗂 APOTHECARE</b></h3>
+
 <h3><b>🗂 Table of Contents</b></h3>
 
 <ul>
