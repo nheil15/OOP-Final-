@@ -5,6 +5,7 @@
 <ul>
   <li><a href="#introduction">Introduction</a></li>
   <li><a href="#objectives">Objectives</a></li>
+  <li><a href="#scope">Scope</a></li>
   <li><a href="#team">Team</a></li>
 </ul>
 
@@ -33,6 +34,13 @@ sensitive customer information and ensuring compliance with data security standa
 4. User-Friendly Interface
  -offer an intuitive and easy-to-navigate interface for pharmacy staff to
 efficiently handle sales, track inventory, and manage customer information.
+
+<h3 id="scope"><b>🔎 Scope</b></h3>
+<h4>The scope of this project includes:</h4>
+
+[![SDG 3](https://img.shields.io/badge/Goal%203-Sustainable%20Development%20Goal-green)](https://sdgs.un.org/goals/goal3)
+
+📌 Apothecare can help achieve Sustainable Development Goal 3 (SDG3) by improving access to medicines, enhancing healthcare delivery, ensuring medication safety and adherence, providing data for public health planning, and optimizing resource utilization. By streamlining inventory management, ensuring consistent availability of essential medicines, and reducing wastage, these systems contribute to better healthcare delivery, reduce the global burden of diseases, and promote health through proper medication use. Overall, pharmacy management systems contribute to a more sustainable healthcare system.
 
 <h3 id="team"><b>👥 Team</b></h3>
 <h4> The following individuals will be working on this project:</h4>
