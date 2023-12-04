@@ -162,8 +162,6 @@ productListItems.forEach((product) => {
         });
     });
 
-    // ...
-
 checkoutBtn.addEventListener('click', () => {
     const amountGiven = parseFloat(amountGivenInput.value) || 0;
     const totalAmount = cartData.reduce((total, product) => total + (product.price * product.quantity), 0);
@@ -186,6 +184,39 @@ checkoutBtn.addEventListener('click', () => {
       alert('Insufficient amount given. Please provide enough to cover the total.');
     }
   });
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const medicineListElement = document.getElementById('medicineList');
+    const url = 'http://localhost:3000/medicines'; 
+  
+    fetch(url)
+      .then(response => response.json())
+      .then(data => {
+        data.forEach(medicine => {
+          const listItem = document.createElement('li');
+          listItem.setAttribute('class', 'product-item');
+          listItem.setAttribute('data-product-id', medicine.id);
+          listItem.setAttribute('data-product-name', medicine.name);
+          listItem.setAttribute('data-product-des', medicine.description);
+          listItem.setAttribute('data-product-price', medicine.price);
+  
+          const medicineInfo = `${medicine.name} ${medicine.description} ${medicine.price}`;
+          listItem.textContent = medicineInfo;
+  
+          const addButton = document.createElement('button');
+          addButton.setAttribute('class', 'add-to-cart-btn');
+          addButton.setAttribute('data-product-name', medicine.name);
+          addButton.setAttribute('data-product-des', medicine.description);
+          addButton.setAttribute('data-product-price', medicine.price);
+          addButton.textContent = 'ADD';
+  
+          listItem.appendChild(addButton);
+          medicineListElement.appendChild(listItem);
+        });
+      })
+      .catch(error => console.error('Error fetching data:', error));
+  });
+  
 
     resetBtn.addEventListener('click', () => {
         cartData = []; 
