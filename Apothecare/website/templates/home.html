@@ -1,0 +1,113 @@
+{% extends "base.html" %} 
+{% block title %}Home{% endblock %}
+
+{% block content %}
+    <h1>Welcome, {{ current_user.Username }}!</h1>
+    <h2>Medicine Inventory</h2>
+
+    <div class="main-container">
+        <div class="cart-and-button-container">
+            <div class="cart">
+                <div id="cart-table-container">
+                    <table id="cart-table">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Price</th>
+                                <th>Quantity</th>
+                                <th>Remove</th>
+                                <th>Add</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cart-list"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="button-container">
+                <button id="checkout-btn">Checkout</button>
+                <label for="amount-given"></label>
+                <input type="number" id="amount-given">
+                <button id="reset-btn">Reset</button>
+                <button id="print-receipt-btn">Print Receipt</button>
+                <div id="cart-total">Total:</div>
+                <label id="change">Change:</label>
+            </div>
+        </div>
+
+        <div class="products-container">
+            <div class="main-content">
+                <div class="product-folder" id="products-folder" data-folder-id="folder1">
+                    <div class="folder-product">PRODUCTS</div>
+                    <input type="text" id="searchInput" placeholder="Search products">
+                    <button id="searchButton">Search</button>
+                    <div id="medicineList">
+                        {% for medicine in medicines %}
+                            <div class="product-item" data-product-id="{{ medicine.MedicineID }}"
+                                 data-product-name="{{ medicine.MedicineName }}"
+                                 data-product-des="{{ medicine.MedicineName }}">
+                                <p>ID: {{ medicine.MedicineID }} </p>
+                                <p>Name: {{ medicine.MedicineName }}</p>
+                                <p>Unit: {{ medicine.UnitOfMedicine }}</p>
+                                <p>Price: {{ medicine.Price }}</p>
+                                <p>Expiration Date: {{ medicine.ExpirationDate }}</p>
+                                <p>Quantity: {{ medicine.QuantityOfMedicine }}</p>
+                                <button class="add-to-cart-btn"
+                                        data-product-id="{{ medicine.MedicineID }}"
+                                        data-product-name="{{ medicine.MedicineName }}"
+                                        data-product-des="{{ medicine.MedicineName }}"
+                                        data-product-price="{{ medicine.Price }}">Add to Cart
+                                </button>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="receipt-container">
+            <table id="receipt-table">
+                <h2>APOTHECARE</h2>
+                <p>BSU Alangilan Campus</p>
+                <hr>
+                <table id="receipt-content">
+                    <tr>
+                        <th>Product</th>
+                        <th>Quantity</th>
+                        <th>Price</th>
+                    </tr>
+                </table>
+                <hr>
+                <div class="total-section">
+                    <p>Total Quantity: <span id="total-quantity">0</span></p>
+                    <p>Total Amount: <span id="total-amount">Php 0.00</span></p>
+                </div>
+                <hr>
+                <div class="payment-section">
+                    <p>Amount given: <span id="amount-receipt">Php 0.00</span></p>
+                    <p>Change: <span id="change-receipt">Php 0.00</span></p>
+                </div>
+                <hr>
+                <p>Thank You! Come Again!</p>
+            </table>
+        </div>
+    </div>
+
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const searchInput = document.getElementById('searchInput');
+            const searchBtn = document.getElementById('searchButton');
+
+            searchBtn.addEventListener('click', function () {
+                const query = searchInput.value.trim();
+                if (query !== '') {
+                    // Perform search operation with the query
+                    // You can use AJAX or other methods to fetch and display search results
+                    console.log('Search query:', query);
+                }
+            });
+        });
+    </script>
+{% endblock %}
