@@ -11,7 +11,7 @@ DB_NAME = "database.db"
 def create_app():
     app = Flask(__name__)
     app.config['SECRET_KEY'] = 'jake'
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:jakemaxim@localhost/Apothecare'
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:@localhost/Apothecare'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False 
     db.init_app(app)
 
