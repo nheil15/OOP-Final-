@@ -59,7 +59,7 @@ class Inventory:
             print(f"Medicine with name '{medicine_name}' already exists in the inventory.")
             return
 
-        next_medicine_id = self.get_next_medicine_id()  # You need to implement this method
+        next_medicine_id = self.get_next_medicine_id()  
 
         insert_query = "INSERT INTO MedicineInv (MedicineID, MedicineName, UnitOfMedicine, Price, ExpirationDate, QuantityOfMedicine) VALUES (%s, %s, %s, %s, %s, %s)"
         cursor = self.connection.cursor()
@@ -67,13 +67,13 @@ class Inventory:
         self.connection.commit()
         cursor.close()
 
-        # Update the local list of medicines
+        
         new_medicine = Medicine(next_medicine_id, medicine_name, unit_of_medicine, price, expiration_date, quantity_of_medicine)
         self.add_medicine(new_medicine)
         print(f"Medicine '{medicine_name}' added to the inventory.")
 
     def get_next_medicine_id(self):
-        # Fetch the next available Medicine ID from the database
+       
         cursor = self.connection.cursor()
         cursor.execute("SELECT MAX(MedicineID) FROM MedicineInv")
         max_medicine_id = cursor.fetchone()[0]
@@ -81,11 +81,11 @@ class Inventory:
 
         if max_medicine_id is not None:
             next_medicine_id = int(max_medicine_id) + 1
-            # Format the MedicineID with leading zeros
-            formatted_medicine_id = f"{next_medicine_id:04d}"  # Assuming a format like '0106'
+           
+            formatted_medicine_id = f"{next_medicine_id:04d}"  
             return formatted_medicine_id
         else:
-            return "0101"  # Default value if there are no existing records
+            return "0101"  
 
     def find_medicines_by_name(self, medicine_name):
         query = "SELECT * FROM MedicineInv WHERE MedicineName LIKE %s"
@@ -106,20 +106,46 @@ class Inventory:
         medicines = self.find_medicines_by_name(medicine_name)
 
         if medicines:
-            # Assume only one instance of medicine with the given name for simplicity
+           
             medicine_to_remove = medicines[0]
 
-            # Delete from the database
+            
             delete_query = "DELETE FROM MedicineInv WHERE MedicineName = %s"
             cursor = self.connection.cursor()
             cursor.execute(delete_query, (medicine_name,))
             self.connection.commit()
             cursor.close()
 
-            # Remove from the local list
+            
             self.medicines = [med for med in self.medicines if med.get_name() != medicine_name]
 
             print(f"Medicine '{medicine_name}' removed from the inventory.")
+            return True
+        else:
+            print(f"Error: Medicine '{medicine_name}' not found in the local list.")
+            return False
+        
+    def update_inventory(self, medicine_name, quantity_sold, increase=False):
+        medicines = self.find_medicines_by_name(medicine_name)
+
+        if medicines:
+           
+            medicine_to_update = medicines[0]
+
+            if increase:
+                new_quantity = medicine_to_update.get_quantity() + quantity_sold
+            else:
+                new_quantity = medicine_to_update.get_quantity() - quantity_sold
+
+            
+            update_query = "UPDATE MedicineInv SET QuantityOfMedicine = %s WHERE MedicineID = %s"
+            cursor = self.connection.cursor()
+            cursor.execute(update_query, (new_quantity, medicine_to_update.get_medicine_id()))
+            self.connection.commit()
+            cursor.close()
+
+            medicine_to_update.set_quantity(new_quantity)
+         
             return True
         else:
             print(f"Error: Medicine '{medicine_name}' not found in the local list.")
@@ -143,6 +169,19 @@ class Inventory:
             medicines.append(medicine)
 
         return medicines
+    
+    def check_medicine_expiration(self, medicine_name):
+        medicines = self.find_medicines_by_name(medicine_name)
+
+        if medicines:
+            
+            medicine_to_check = medicines[0]
+
+            if medicine_to_check.is_expired():
+                print(f"Warning: Medicine '{medicine_name}' is expired!")
+            else:
+                print(f"Medicine '{medicine_name}' is not expired.")
+      
 
 class Pharmacy:
     def __init__(self, connection):
@@ -174,38 +213,78 @@ class Pharmacy:
     def record_sale(self, sold_items):
         cursor = self.inventory.connection.cursor()
 
-        for item in sold_items:
-            medicine_name = item['medicine'].get_name()
-            quantity_sold = item['quantity']
-            total_price = item['medicine'].get_price() * quantity_sold
+        try:
+            for item in sold_items:
+                medicine_name = item['medicine'].get_name()
+                quantity_sold = item['quantity']
+                total_price = item['medicine'].get_price() * quantity_sold
 
-            medicine_id = self.inventory.get_medicine_id_by_name(medicine_name)
-            sales_id = self.generate_sales_id()
-            sales_date = datetime.now().date()
-            unit_price = total_price / quantity_sold
+                medicines = self.inventory.find_medicines_by_name(medicine_name)
+                if medicines:
+                    medicine_to_check = medicines[0]
 
-            # Update SalesOfMedicine table
-            insert_query = "INSERT INTO SalesOfMedicine (SalesID, UnitPrice, TotalPrice, MedicineID) VALUES (%s, %s, %s, %s)"
-            cursor.execute(insert_query, (sales_id, unit_price, total_price, medicine_id))
+                    
+                    if not self.inventory.check_medicine_expiration(medicine_to_check):
+                        
+                        medicine_id = medicine_to_check.get_medicine_id()
 
-            # Update Inventory table
-            self.inventory.update_inventory(medicine_name, quantity_sold, increase=False)
+                        sales_id = self.generate_sales_id()
+                        sales_date = datetime.now().date()
+                        unit_price = total_price / quantity_sold
 
-        self.inventory.connection.commit()
-        cursor.close()
+                        try:
+                            
+                            insert_query = "INSERT INTO SalesOfMedicine (SalesDate, UnitPrice, TotalPrice, MedicineID) VALUES (%s, %s, %s, %s)"
+
+                            cursor.execute(insert_query, (sales_date, unit_price, total_price, medicine_id))
+
+
+                            
+                            self.inventory.update_inventory(medicine_name, quantity_sold, increase=False)
+                        except Exception as e:
+                            print(f"Error during sale (SalesOfMedicine): {str(e)}")
+                    else:
+                        print(f"Error: Medicine '{medicine_name}' is expired and cannot be sold.")
+                else:
+                    print(f"Error: Medicine '{medicine_name}' not found in the inventory.")
+
+        except Exception as e:
+            print(f"Error during sale (Pharmacy): {str(e)}")
+
+        finally:
+            self.inventory.connection.commit()
+            cursor.close()
+
+
+    def calculate_total_sales(self):
+        cursor = self.inventory.connection.cursor()
+        try:
+            
+            total_sales_query = "SELECT SUM(TotalPrice) FROM SalesOfMedicine WHERE SalesDate = %s"
+            cursor.execute(total_sales_query, (datetime.now().date(),))
+            total_sales = cursor.fetchone()[0]
+            return total_sales if total_sales else 0
+        except Exception as e:
+            print(f"Error calculating total sales: {str(e)}")
+            return 0
+        finally:
+            cursor.close()
+
 
     _sales_counter = count(start=1)
     def generate_sales_id(self):
         timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-        sales_id = f"S{timestamp}{next(self._sales_counter)}"
-        return sales_id
+        sales_id = int(f"{timestamp}{next(self._sales_counter)}") % 10000000000  # Ensure it fits within 10 digits
+        return None
+
+
 
     def sell_medicine(self, receipt):
         sell_list = []
 
         while True:
             print("\n\n\nAdd a Medicine:")
-            medicine_name = input("Enter medicine name (or 'exit' to stop): ")
+            medicine_name = input("Enter medicine name: ")
 
             if medicine_name.lower() == 'exit':
                 break
@@ -308,7 +387,7 @@ class UserManager:
             if user_data:
                 return User(
                 user_data['UserId'],
-                user_data['UserEmail'],  # Updated line for email
+                user_data['UserEmail'],  
                 user_data['Username'],
                 user_data['Password'],
                 user_data['CreatedAt']
@@ -325,7 +404,7 @@ def main():
         with mysql.connector.connect(
             host="localhost",
             user="root",
-            password="jakemaxim",
+        
             database="Apothecare"
         ) as db_connection:
 
@@ -353,7 +432,7 @@ def main():
                 elif choice == '2':
                     username = input("Enter a new username: ")
                     password = input("Enter a new password: ")
-                    user_email = input("Enter your email: ")  # Added line for email
+                    user_email = input("Enter your email: ") 
                     user_manager.create_user(username, password, user_email)
 
                 elif choice == '3':
@@ -417,7 +496,7 @@ def run_pharmacy_system(pharmacy):
 @app.route('/')
 def index():
     return render_template('home.html')
-# Add new route for fetching medicines from the database
+
 @app.route('/get_medicines', methods=['GET'])
 def get_medicines():
     cursor = db_connection.cursor(dictionary=True)
@@ -426,13 +505,59 @@ def get_medicines():
     cursor.close()
     return jsonify(medicines)
 
+@app.route('/get_medicine_info', methods=['GET'])
+def get_medicine_info():
+    try:
+       
+        medicine_id = request.args.get('medicine_id', '')
+
+       
+        medicines = Pharmacy.inventory.find_medicines_by_id(medicine_id)
+
+        if medicines:
+            medicine = medicines[0]
+            result = {
+                'medicine_id': medicine.get_medicine_id(),
+                'medicine_name': medicine.get_name(),
+                'unit_of_medicine': medicine.unit_of_medicine,
+                'price': medicine.get_price(),
+                'expiration_date': str(medicine.expiration_date),
+                'quantity_of_medicine': medicine.get_quantity()
+            }
+        else:
+            result = {"error": "Medicine not found."}
+
+    except Exception as e:
+        result = {"error": f"Error: {str(e)}"}
+
+    return jsonify(result)
+
+@app.route('/sell_medicine', methods=['POST'])
+def sell_medicine():
+    try:
+    
+        sales_data = request.json
+        
+        pharmacy_instance = Pharmacy(db_connection)
+
+       
+        receipt = pharmacy_instance.sell_medicine(sales_data)
+
+        result = {"success": True, "message": "Medicine sold successfully.", "receipt": receipt}
+
+    except Exception as e:
+        result = {"success": False, "message": f"Error: {str(e)}"}
+
+    return jsonify(result)
+
+
 @app.route('/add_medicine_to_database', methods=['POST'])
 def add_medicine_to_database():
     try:
-        # Extract medicine details from the POST request
+        
         medicine_details = request.json
 
-        # Assuming pharmacy is already created and available in the scope
+        
         Pharmacy.inventory.add_medicine_to_inventory(
             medicine_details['medicine_name'],
             medicine_details['unit_of_medicine'],
@@ -445,6 +570,41 @@ def add_medicine_to_database():
 
     except Exception as e:
         return f'Error: {str(e)}'
+    
+@app.route('/dailySales_summary', methods=['GET'])
+def daily_sales_summary():
+    try:
+        pharmacy_instance = Pharmacy(db_connection)
+       
+        current_date = datetime.now().strftime('%Y-%m-%d')
+        total_sales_today = pharmacy_instance.calculate_total_sales()
+
+        result = {"result": f"Total Sales for {current_date}: {total_sales_today}"}
+    except Exception as e:
+        result = {"result": f"Error: {str(e)}"}
+
+    return jsonify(result)
+
+@app.route('/low_stock_alert', methods=['GET'])
+def low_stock_alert():
+    try:
+        # Set the threshold for low stock 
+        LOW_STOCK_THRESHOLD = 30
+
+
+        
+        low_stock_medicines = [med for med in Inventory if med.quantity < LOW_STOCK_THRESHOLD]
+
+        if low_stock_medicines:
+            result = {"result": "Low stock alert!",
+                      "medicines": [{"name": med.name, "quantity": med.quantity} for med in low_stock_medicines]}
+        else:
+            result = {"result": "No low stock alert."}
+    except Exception as e:
+        result = {"result": f"Error: {str(e)}"}
+
+    return jsonify(result)
+
 
 
 @app.route('/search_medicine', methods=['GET'])
@@ -471,7 +631,6 @@ if __name__ == "__main__":
         with mysql.connector.connect(
                 host="localhost",
                 user="root",
-                password="jakemaxim",
                 database="Apothecare"
         ) as db_connection:
             user_manager = UserManager(db_connection)
@@ -498,7 +657,7 @@ if __name__ == "__main__":
                 elif choice == '2':
                     username = input("Enter a new username: ")
                     password = input("Enter a new password: ")
-                    user_email = input("Enter your email: ")  # Added line for email
+                    user_email = input("Enter your email: ")  
                     user_manager.create_user(username, password, user_email)
 
                 elif choice == '3':
